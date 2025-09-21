@@ -1,12 +1,13 @@
 --!strict
 
--- local STARTING_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"
-local STARTING_FEN = "8/4P/8/8/8/8/4p/8" -- promotion test
+local STARTING_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"
+-- local STARTING_FEN = "8/pppp/8/8/8/8/PPPP/8" -- promotion test
 
 local HttpService = game:GetService("HttpService")
 local Players = game:GetService("Players")
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local ChessEngine = require(ReplicatedStorage.Modules.Libraries.ChessEngine)
 local ChessUtils = require(ReplicatedStorage.Modules.Libraries.ChessUtils)
 local ChessTypes = require(ReplicatedStorage.Modules.Types.ChessTypes)
 
@@ -77,10 +78,6 @@ local function clearEnPassantFlags(boardState: ChessTypes.BoardState, color: Che
 	end
 end
 
-local function switchTurns(chessGame: ChessTypes.ChessGame)
-	chessGame.turn = (chessGame.turn == "Black" and "White" or "Black") :: ChessTypes.PieceColor
-end
-
 local function getGameFromPlayer(Player: Player): ChessTypes.ChessGame
 	local chessGame: ChessTypes.ChessGame
 	for _, activeGame in pairs(activeGames) do
@@ -99,6 +96,21 @@ local function updateGameForPlayers(chessGame: ChessTypes.ChessGame)
 	if chessGame.WhitePlayer ~= "AI" then
 		GameService.RemoteEvent:FireClient(chessGame.WhitePlayer, "UpdateGame", chessGame)
 	end
+end
+
+local function switchTurns(chessGame: ChessTypes.ChessGame)
+	chessGame.turn = (chessGame.turn == "Black" and "White" or "Black") :: ChessTypes.PieceColor
+end
+
+local function engineTurn(chessGame: ChessTypes.ChessGame)
+	delay(1, function()
+		local pieceToMove, targetCoord =
+			ChessEngine.calculateMove(chessGame.state, chessGame.turn, 2)
+		clearEnPassantFlags(chessGame.state, chessGame.turn)
+		ChessUtils.movePiece(chessGame.state, pieceToMove, targetCoord)
+		switchTurns(chessGame)
+		updateGameForPlayers(chessGame)
+	end)
 end
 
 local function playerPlacePiece(Player: Player, targetCoord: Vector2, pieceUID: string)
@@ -120,25 +132,39 @@ local function playerPlacePiece(Player: Player, targetCoord: Vector2, pieceUID: 
 	if not piece then return end
 
 	-- Check to make sure target coord is valid
+	local coordValid = false
 	for _, coord in pairs(ChessUtils.getValidMoves(piece, boardState)) do
 		if coord == targetCoord then
-			-- Clear any en passant flags
-			clearEnPassantFlags(boardState, piece.Color)
-
-			-- Move piece
-			if not ChessUtils.movePiece(boardState, piece, coord) then
-				-- Normal turn end
-				switchTurns(activeGame)
-			else
-				-- Prompt promotion
-				activeGame.promotingPiece = ChessUtils.getPieceFromUID(pieceUID, boardState)
-				GameService.RemoteEvent:FireClient(Player, "PromptPromotion", targetCoord, pieceUID)
-			end
-
-			-- Update players' games
-			updateGameForPlayers(activeGame)
-			return
+			coordValid = true
+			break
 		end
+	end
+	if not coordValid then
+		warn(`{Player} tried to move {piece.Type} from {piece.Coord} to {targetCoord}`)
+		return
+	end
+
+	-- Clear any en passant flags
+	clearEnPassantFlags(boardState, piece.Color)
+
+	-- Move piece
+	if not ChessUtils.movePiece(boardState, piece, targetCoord) then
+		-- Normal turn end
+		switchTurns(activeGame)
+	else
+		-- Prompt promotion
+		activeGame.promotingPiece = ChessUtils.getPieceFromUID(pieceUID, boardState)
+		GameService.RemoteEvent:FireClient(Player, "PromptPromotion", targetCoord, pieceUID)
+	end
+
+	-- Update players' games
+	updateGameForPlayers(activeGame)
+
+	-- Handle AI turn if applicable
+	if
+		(activeGame.turn == "White" and activeGame.WhitePlayer or activeGame.BlackPlayer) == "AI"
+	then
+		engineTurn(activeGame)
 	end
 end
 

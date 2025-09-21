@@ -428,17 +428,17 @@ local function setupGame(chessGame: ChessTypes.ChessGame)
 	playerColor = (chessGame.WhitePlayer == Player and "White" or "Black") :: ChessTypes.PieceColor
 
 	-- TODO: temp setup for item testing
-	local IceSelectable =
-		ClientEffects.createItemSelectable(ReplicatedStorage.Assets.Items.Ice:Clone())
-	Selectables[IceSelectable.UID] = IceSelectable
-	IceSelectable.Model.Parent = workspace
-	IceSelectable.Model:PivotTo(BoardModel.WorldPivot * CFrame.new(0, 1, 0))
+	-- local IceSelectable =
+	-- 	ClientEffects.createItemSelectable(ReplicatedStorage.Assets.Items.Ice:Clone())
+	-- Selectables[IceSelectable.UID] = IceSelectable
+	-- IceSelectable.Model.Parent = workspace
+	-- IceSelectable.Model:PivotTo(BoardModel.WorldPivot * CFrame.new(0, 1, 0))
 
-	local AirStrikeSelectable =
-		ClientEffects.createItemSelectable(ReplicatedStorage.Assets.Items.AirStrike:Clone())
-	Selectables[AirStrikeSelectable.UID] = AirStrikeSelectable
-	AirStrikeSelectable.Model.Parent = workspace
-	AirStrikeSelectable.Model:PivotTo(BoardModel.WorldPivot * CFrame.new(3, 5, 0))
+	-- local AirStrikeSelectable =
+	-- 	ClientEffects.createItemSelectable(ReplicatedStorage.Assets.Items.AirStrike:Clone())
+	-- Selectables[AirStrikeSelectable.UID] = AirStrikeSelectable
+	-- AirStrikeSelectable.Model.Parent = workspace
+	-- AirStrikeSelectable.Model:PivotTo(BoardModel.WorldPivot * CFrame.new(3, 1, -3))
 end
 
 function updateGame(updateChessGame: ChessTypes.ChessGame)

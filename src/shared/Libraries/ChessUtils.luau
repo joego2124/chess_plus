@@ -400,4 +400,30 @@ function ChessUtils.iterateBoard(boardState: ChessTypes.BoardState, f: (ChessTyp
 	end
 end
 
+function ChessUtils.cloneBoard(boardState: ChessTypes.BoardState): ChessTypes.BoardState
+	local clonedState: ChessTypes.BoardState = {}
+
+	--TODO: why doesn't this work??
+	-- ChessUtils.iterateBoard(boardState, function(piece: ChessTypes.Piece)
+	-- 	if not clonedState[piece.Coord.X] then clonedState[piece.Coord.X] = {} end
+	-- 	local rank = clonedState[piece.Coord.X]
+	-- 	rank[piece.Coord.Y] = ChessUtils.emptyPiece(piece.Coord.X, piece.Coord.Y)
+	-- 	for k, v in pairs(piece) do
+	-- 		rank[piece.Coord.Y][k] = v
+	-- 	end
+	-- end)
+
+	for r = 1, #boardState do
+		clonedState[r] = {}
+		for f = 1, #boardState[1] do
+			clonedState[r][f] = ChessUtils.emptyPiece(r, f)
+			for k, v in pairs(boardState[r][f]) do
+				clonedState[r][f][k] = v
+			end
+		end
+	end
+
+	return clonedState
+end
+
 return ChessUtils
