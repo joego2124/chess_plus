@@ -103,9 +103,10 @@ local function switchTurns(chessGame: ChessTypes.ChessGame)
 end
 
 local function engineTurn(chessGame: ChessTypes.ChessGame)
-	delay(1, function()
+	task.defer(function()
 		local pieceToMove, targetCoord =
 			ChessEngine.calculateMove(chessGame.state, chessGame.turn, 2)
+		print(`Moving {pieceToMove.Color} {pieceToMove.Type} to {targetCoord}`)
 		clearEnPassantFlags(chessGame.state, chessGame.turn)
 		ChessUtils.movePiece(chessGame.state, pieceToMove, targetCoord)
 		switchTurns(chessGame)

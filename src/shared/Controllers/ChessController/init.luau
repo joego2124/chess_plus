@@ -128,7 +128,9 @@ local function clearPieces()
 	ChessUtils.iterateBoard(currentChessGame.state, function(piece)
 		local Selectable = Selectables[piece.UID]
 		if not Selectable then
-			warn(`Piece {Selectable} has no Selectable cached!`)
+			if piece.Type ~= "NA" then
+				warn(`{piece.Color} {piece.Type} has no Selectable cached!`)
+			end
 			return
 		end
 		Selectable.Model:Destroy()
@@ -459,8 +461,8 @@ function updateGame(updateChessGame: ChessTypes.ChessGame)
 			"Temporary"
 		)
 	end
+	if currentChessGame then clearPieces() end
 	currentChessGame = updateChessGame
-	clearPieces()
 	local newSelectables = ClientEffects.populatePieces(BoardModel, currentChessGame.state)
 	for UID, Selectable in pairs(newSelectables) do --TODO: temp hacky way of updating
 		Selectables[UID] = Selectable
