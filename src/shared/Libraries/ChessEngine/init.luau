@@ -44,7 +44,7 @@ function ChessEngine.calculateMove(
 			end
 			if (tick() - t) > (1 / 30) then
 				print(`no avail actors, frame time reached`)
-				wait()
+				task.wait()
 				t = tick()
 			end
 		until Actor
@@ -59,6 +59,9 @@ function ChessEngine.calculateMove(
 		conn = Actor:GetAttributeChangedSignal(EngineTypes.ActorAttributes.Evaluation)
 			:Connect(function()
 				local newEval = Actor:GetAttribute(EngineTypes.ActorAttributes.Evaluation) :: number
+				-- print(
+				-- 	`[ACK] evaluating moving {piece.Color} {piece.Type} from {piece.Coord} to {targCoord} with eval {newEval}`
+				-- )
 				if
 					(turnColor == "White" and newEval > bestEval)
 					or (turnColor == "Black" and newEval < bestEval)
@@ -69,9 +72,6 @@ function ChessEngine.calculateMove(
 					bestCoord = targCoord
 				end
 				pending[`{piece.Color} {piece.Type} from {piece.Coord} to {targCoord}`] = nil
-				print(
-					`[ACK] evaluating moving {piece.Color} {piece.Type} from {piece.Coord} to {targCoord} with eval {newEval}`
-				)
 				pendingMoves -= 1
 				Actor:SetAttribute(EngineTypes.ActorAttributes.Busy, false)
 				conn:Disconnect()
@@ -101,9 +101,8 @@ function ChessEngine.calculateMove(
 	end)
 
 	-- Yield until all moves evaluated
-	while pendingMoves > 0 do
-		print(pending)
-		wait()
+	while pendingMoves > 0 and task.wait() do
+		-- print(pending)
 	end
 
 	return pieceToMove, bestCoord

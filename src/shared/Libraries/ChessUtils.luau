@@ -282,6 +282,7 @@ function ChessUtils.movePiece(
 				end
 			end
 			if not kingPiece then
+				print(boardState[pieceMoved.Color == "White" and 1 or 8])
 				warn(`Trying to revoke castling privilege but {pieceMoved.Color}'s king not found!`)
 			end
 			if pieceMoved.Coord.Y == 1 and kingPiece then kingPiece.CanCastleLong = false end

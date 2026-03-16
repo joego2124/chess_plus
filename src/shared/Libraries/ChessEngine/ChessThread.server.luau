@@ -26,12 +26,16 @@ Actor:BindToMessageParallel(
 
 		local newEval =
 			Minimax.miniMax(newBoardState, searchDepth, -math.huge, math.huge, turnColor)
+		--NOTE: add slight offset so as to trigger AttributeChanged signal
+		newEval = newEval == Actor:GetAttribute(EngineTypes.ActorAttributes.Evaluation)
+				and newEval + 0.0001
+			or newEval
 
 		debug.profileend()
 		task.synchronize()
-		print(
-			`[SNT] evaluating moving {piece.Color} {piece.Type} from {piece.Coord} to {targCoord} with eval {newEval}`
-		)
 		Actor:SetAttribute(EngineTypes.ActorAttributes.Evaluation, newEval)
+		-- print(
+		-- 	`[SNT] evaluating moving {piece.Color} {piece.Type} from {piece.Coord} to {targCoord} with eval {newEval}`
+		-- )
 	end
 )
